@@ -4,11 +4,6 @@ Pkg.activate(".")
 using Plots, DataFrames, CSV
 
 
-function get_data()
-    return DataFrame(CSV.File("data/Melbourne_housing_FULL.csv"; missingstring = "NA"))
-end
-
-
 function last_less_index(item, categories)
     for (i, cat) in enumerate(categories)
         item < cat && return i - 1
@@ -41,37 +36,43 @@ function category_counts(iter)
 end
 
 
-data = get_data()
+data = DataFrame(CSV.File("data/Melbourne_housing_FULL.csv"; missingstring = "NA"))
 
-
-room_bar() = bar(
+room() = bar(
     ["1", "2", "3", "4", "5", "6+"],
     category_counts(data.Rooms, 1:6);
     title = "Room Distribution",
     label = false)
 
+prices() = histogram(
+    [parse(Int, x) for x in data.Price if length(x) > 0];
+    title = "Prices Distribution",
+    legend = false)
 
-function prices_bar()
-    # Drop data that is the empty string
-    prices = map(y -> parse(Int, y), filter(x -> length(x) > 0, data.Price))
-    categories = collect(0:Int(3e5):Int(1.5e6))
-
-    labels = Vector{String}(undef, length(categories))
-    for (i, lower) in enumerate(categories)
-        labels[i] = "$(lower)+"
-    end
-
-    return bar(
-        labels,
-        category_counts(prices, categories);
-        title = "Price Distribution",
-        label = false)
-end
-
-
-method_bar() = bar(category_counts(data.Method)...;
+method() = bar(category_counts(data.Method)...;
     title = "Method",
     label = false)
 
+distance() = histogram(
+    [parse(Float32, x) for x in data.Distance if isdigit(first(x))];
+    title = "Distance",
+    xlabel = "Distance from CBD (km)",
+    label = false)
 
-display(method_bar())
+const superscript_2 = Char(0x00B2)
+
+function landsize()
+    land_data = [parse(Int, x) for x in data.Landsize if length(x) > 0]
+    buckets = collect(0:200:1000)
+    labels = Vector{String}(undef, length(buckets))
+    for i in 2:length(buckets)
+        labels[i - 1] = "$(buckets[i - 1])-$(buckets[i] - 1)"
+    end
+    labels[end] = "$(buckets[end])+"
+    return bar(
+        labels,
+        category_counts(land_data, buckets);
+        title = "Land Sizes",
+        label = false,
+        xlabel = "Land size (m$superscript_2)")
+end
