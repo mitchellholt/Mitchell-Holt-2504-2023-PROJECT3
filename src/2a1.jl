@@ -1,6 +1,6 @@
 using Pkg; Pkg.activate(".")
 
-using Plots, CSV, Tables
+using Plots, CSV, Tables, Random
 
 const fashion_mnist_train_path = "data/FashionMNIST/fashion-mnist_train.csv"
 const fashion_mnist_rotations_train_path = begin
@@ -38,21 +38,26 @@ display_img(img) = heatmap(
 
 # Read all the data in the input CSV file, apply rotations and then save it to
 # a CSV file
-function transform_data(input_file_name :: String, output_file_name :: String)
+function transform_data(input_file_name :: String, output_file_name :: String;
+        seed = 5)
+
+    Random.seed!(seed)
     raw_data = Tables.matrix(
-        CSV.File(input_file_name; limit=1)) # limit for debug, remove later
+        CSV.File(input_file_name))
     # ignore existing labels, we will use our own
     imgs = [
         transpose(reshape(row[2:end], img_dims, img_dims))
         for row in eachrow(raw_data)
     ]
     transformed = [
-        (i, j)
-        for i in 0:3
-        for j in map(compose(rotate_counter_clockwise, 4 - i), imgs)
+        begin
+            i = rand(0:3)
+            (i, compose(rotate_counter_clockwise, 4 - i)(img))
+        end
+        for img in imgs
     ]
     # Plot example
-    display(plot(map(x -> display_img(x[2]), transformed[1:4])...))
+    example = plot(map(x -> display_img(x[2]), transformed[1:4])...)
     # Save to csv
     out_matrix = Matrix{Int}(undef, length(transformed), (28 * 28) + 1)
     for k in 1:length(transformed)
@@ -60,6 +65,7 @@ function transform_data(input_file_name :: String, output_file_name :: String)
         out_matrix[k, 2:end] = transformed[k][2]
     end
     CSV.write(output_file_name, Tables.table(out_matrix))
+    return example
 end
 
 
@@ -72,3 +78,6 @@ function import_transformed_csv(input_file_name :: String)
         for row in eachrow(raw_data)
     ]
 end
+
+
+transform_data(fashion_mnist_train_path, fashion_mnist_rotations_train_path)
