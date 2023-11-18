@@ -2,10 +2,20 @@ using Pkg; Pkg.activate(".")
 
 using Plots, CSV, Tables, Random
 
+# Paths to data
 const fashion_mnist_train_path = "data/FashionMNIST/fashion-mnist_train.csv"
 const fashion_mnist_rotations_train_path = begin
     "data/FashionMNIST/fashion-mnist-rotated_train.csv"
 end
+const fashion_mnist_test_path = "data/FashionMNIST/fashion-mnist_test.csv"
+const fashion_mnist_rotations_test_path = begin
+    "data/FashionMNIST/fashion-mnist-rotated_test.csv"
+end
+const mnist_train_path = "data/MNIST/mnist_train.csv"
+const mnist_rotations_train_path = "data/MNIST/mnist-rotated_train.csv"
+const mnist_test_path = "data/MNIST/mnist_test.csv"
+const mnist_rotations_test_path = "data/MNIST/mnist-rotated_test.csv"
+
 const img_dims = 28
 
 const rotate_0_label = 0
@@ -80,4 +90,8 @@ function import_transformed_csv(input_file_name :: String)
 end
 
 
-transform_data(fashion_mnist_train_path, fashion_mnist_rotations_train_path)
+# transform_data(mnist_train_path, mnist_rotations_train_path)
+# transform_data(mnist_test_path, mnist_rotations_test_path)
+
+# transform_data(fashion_mnist_train_path, fashion_mnist_rotations_train_path)
+# transform_data(fashion_mnist_test_path, fashion_mnist_rotations_test_path)
